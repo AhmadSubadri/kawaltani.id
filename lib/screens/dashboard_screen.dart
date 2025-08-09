@@ -31,7 +31,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _initializeSiteId() async {
     final storedSiteId = await storage.read(key: 'selectedSiteId');
-    print('Stored siteId: $storedSiteId');
     setState(() {
       siteId = storedSiteId;
       isLoading = true;
@@ -41,23 +40,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _fetchAreas() async {
     try {
-      final data = await apiService.getAreas(siteId);
-      print('Fetched areas: $data');
+      final data = await apiService.getAreas();
       setState(() {
         areas = data;
         isLoading = false;
         hasError = false;
       });
-      if (siteId == null && data.isNotEmpty) {
+      if (data.isNotEmpty) {
         setState(() {
-          siteId = data[0]['id'].toString();
+          siteId = data[0]['site_id'].toString(); // Use 'site_id' from backend
         });
         await storage.write(key: 'selectedSiteId', value: siteId);
         _fetchData();
-      } else if (data.isEmpty) {
+      } else {
         setState(() {
           hasError = true;
-          errorMessage = 'Tidak ada lahan tersedia untuk site_id: $siteId';
+          errorMessage = 'Tidak ada lahan tersedia untuk akun ini';
         });
         _showSiteSelectionDialog();
       }
@@ -87,8 +85,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     try {
       final dashData = await apiService.getDashboard(siteId!);
       final realData = await apiService.getRealtimeData(siteId!);
-      print('Dashboard data: ${dashData.toString()}');
-      print('Realtime data: ${realData.toString()}');
       setState(() {
         dashboardData = dashData;
         realtimeData = realData;
@@ -96,7 +92,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         hasError = false;
       });
     } catch (e) {
-      print('Error fetching data: $e');
       setState(() {
         isLoading = false;
         hasError = true;
@@ -187,9 +182,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 areas.isNotEmpty
                     ? areas.map<DropdownMenuItem<String>>((area) {
                       return DropdownMenuItem<String>(
-                        value: area['id'].toString(),
+                        value: area['site_id'].toString(),
                         child: Text(
-                          area['name'] ?? 'Lahan ${area['id']}',
+                          area['site_name'] ?? 'Lahan ${area['site_id']}',
                           style: const TextStyle(color: Colors.white),
                         ),
                       );

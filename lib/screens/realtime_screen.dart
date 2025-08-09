@@ -38,7 +38,7 @@ class _RealtimeScreenState extends State<RealtimeScreen> {
   Future<void> _fetchAreas() async {
     try {
       if (siteId == null) return;
-      final data = await apiService.getAreas(siteId!);
+      final data = await apiService.getAreas();
       setState(() {
         areas = data;
       });

@@ -61,12 +61,16 @@ class ApiService {
     final token = await storage.read(key: 'token');
     final response = await http.get(
       Uri.parse('$baseUrl/dashboard?site_id=$siteId'),
-      headers: {'Authorization': 'Bearer $token'},
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
     );
 
+    print('Dashboard Response: ${response.statusCode}, Body: ${response.body}');
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return DashboardData.fromJson(data);
+      return DashboardData.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Failed to load dashboard: ${response.body}');
     }
@@ -76,36 +80,38 @@ class ApiService {
     final token = await storage.read(key: 'token');
     final response = await http.get(
       Uri.parse('$baseUrl/realtime?site_id=$siteId'),
-      headers: {'Authorization': 'Bearer $token'},
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
     );
 
+    print('Realtime Response: ${response.statusCode}, Body: ${response.body}');
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return DashboardData.fromJson(data);
+      return DashboardData.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Failed to load realtime data: ${response.body}');
     }
   }
 
-  Future<List<dynamic>> getAreas(String? siteId) async {
+  Future<List<dynamic>> getAreas() async {
     final token = await storage.read(key: 'token');
-    print('Fetching areas with token: $token, siteId: $siteId');
-    final uri =
-        siteId != null
-            ? Uri.parse('$baseUrl/area?site_id=$siteId')
-            : Uri.parse('$baseUrl/area');
+    final uri = Uri.parse('$baseUrl/site');
     final response = await http.get(
       uri,
       headers: {
         'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
     );
 
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      return jsonDecode(response.body)['data'];
     } else {
-      throw Exception('Failed to load areas: ${response.body}');
+      final error = jsonDecode(response.body)['message'] ?? 'Unknown error';
+      throw Exception(error);
     }
   }
 
